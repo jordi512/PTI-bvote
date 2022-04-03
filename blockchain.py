@@ -6,9 +6,10 @@ from urllib.parse import urlparse
 from uuid import uuid4
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
-
+from Crypto.Signature import pkcs1_15
 import requests
 from flask import Flask, jsonify, request
+import binascii
 
 # python3 -m pip install pycryptodome
 
@@ -19,10 +20,20 @@ class Blockchain:
         self.orphans= []
         self.forks= []
         self.nodes = set()
-        self.senders=set()
+        self.senders=[]
         # inicializar con la base de datos
         # Create the genesis block
         self.new_block(previous_hash='1', proof=100,transactions=self.current_transactions,timestamp=time())
+
+    def encode_signature(self, sig):
+        chain=bytes()
+        for i in range(0,367,46):
+            chain+=binascii.a2b_uu(sig[i:i+46])
+        return chain
+
+    def modify_senders(self,key):
+        self.senders.append(key)
+
 
     def register_node(self, address):
         """
@@ -74,18 +85,19 @@ class Blockchain:
         return new_chain
 
     def valid_transaction(self, transaction):
-        if not (transaction['sender'] in senders):
+        sender=RSA.import_key(transaction['sender'])
+        if not (sender in self.senders):
             return False
         message='signature'
         h=SHA256.new(message.encode())
-        decipher_rsa = RSA.import_key(transaction['sender'])
+        signature=self.encode_signature(transaction['signature'].encode())
         try:
-            pkcs1_15.new(decipher_rsa).verify(h, transaction['signature'])
+            pkcs1_15.new(sender).verify(h, signature)
         except (ValueError, TypeError):
             return False
         if self.repeated_transaction(transaction['sender']):
             return False
-        return true
+        return True
 
     def valid_block(self, block):
         if len(self.chain)==0: return True
@@ -96,11 +108,11 @@ class Blockchain:
         for trans in block['transactions']:
             if not self.valid_transaction(trans):
                 return False
-        return true
+        return True
 
     def repeated_block(self, block):
         for b in self.chain:
-            if b==block: return true
+            if b==block: return True
         return False
 
     def repeated_transaction(self, sender):
@@ -108,7 +120,7 @@ class Blockchain:
             transactions=block['transactions']
             for trans in transactions:
                 if trans['sender']==sender:
-                    return true
+                    return True
         return False
 
 # may be deleted
@@ -116,12 +128,12 @@ class Blockchain:
     def exists_transaction(self,transaction):
         ref=transaction['ref']
         if transaction in self.current_transactions:
-            return true
+            return True
         for block in self.chain:
             transactions=block['transactions']
             for trans in transactions:
                 if hashlib.sha256(trans).hexdigest()==ref:
-                    return true
+                    return True
         return False
     """
 
@@ -223,11 +235,11 @@ class Blockchain:
                 if search==1:
                     fork.append(block)
                     self.traverse_orphans(fork,self.hash(block))
-                    parents=true
+                    parents=True
                     break
                 elif search==2:
                     self.traverse_orphans(self.forks[-1],self.hash(block))
-                    parents=true
+                    parents=True
                     break
             if not parents:
                 self.orphans.append(block)
@@ -257,19 +269,17 @@ class Blockchain:
     def clean_transactions(self, transactions):
         self.current_transactions = [x for x in self.current_transactions if x not in transactions]
 
-    def new_transaction(self, sender, recipient, ref, signature):
+    def new_transaction(self, sender, recipient, signature):
         """
         Creates a new transaction to go into the next mined Block
 
         :param sender: Address of the Sender
         :param recipient: Address of the Recipient
-        :param ref: Refference to a previous transaction where the node received the possibility to vote
         :return: The index of the Block that will hold this transaction
         """
         transaction={
             'sender': sender,
             'recipient': recipient,
-            'ref': ref,
             'signature': signature,
         }
         if self.valid_transaction(transaction):
@@ -300,7 +310,8 @@ class Blockchain:
 
         return proof
 
-    def valid_proof(self, proof, previous_hash, timestamp):
+    @staticmethod
+    def valid_proof(proof, previous_hash, timestamp):
         guess = f'{proof}{previous_hash}{timestamp}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
@@ -319,11 +330,11 @@ blockchain = Blockchain()
 def mine():
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
-    proof = blockchain.proof_of_work(last_block['previous_hash'],last_block['timestamp'])
-
+    timestamp=time()
     previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash,blockchain.current_transactions,time())
+    proof = blockchain.proof_of_work(previous_hash,timestamp)
 
+    block = blockchain.new_block(proof, previous_hash,blockchain.current_transactions,timestamp)
     response = {
         'message': "New Block Forged",
         'index': block['index'],
@@ -333,18 +344,28 @@ def mine():
     }
     return jsonify(response), 200
 
+@app.route('/transactions/modify', methods=['POST'])
+def send_key():
+    values = request.get_json()
+    required = ['path']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    key = RSA.import_key(open(values['path']).read())
+    blockchain.modify_senders(key)
+    response = {'message': f'Sender will be added to Senders list'}
+    return jsonify(response), 201
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
 
     # Check that the required fields are in the POST'ed data
-    required = ['sender', 'recipient', 'ref', 'signature']
+    required = ['sender', 'recipient', 'signature']
     if not all(k in values for k in required):
         return 'Missing values', 400
 
     # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['ref'], values['signature'])
+    index = blockchain.new_transaction(values['sender'], values['recipient'], values['signature'])
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
