@@ -1,0 +1,51 @@
+-- MySQL dump 10.19  Distrib 10.3.34-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: auth
+-- ------------------------------------------------------
+-- Server version	10.3.34-MariaDB-0ubuntu0.20.04.1
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `publicKeys`
+--
+
+DROP TABLE IF EXISTS `publicKeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `publicKeys` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pk` binary(64) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `publicKeys`
+--
+
+LOCK TABLES `publicKeys` WRITE;
+/*!40000 ALTER TABLE `publicKeys` DISABLE KEYS */;
+INSERT INTO `publicKeys` VALUES (1,'de32c32b4fae693f807da208dc86dcf20fa2f620e20d9edcc17d4c7311\0\0\0\0\0\0'),(2,'de32c32b4fae693f807da208dc86dcf20fa2f620e20d9edcc17d4c7321\0\0\0\0\0\0'),(3,'de32c32b4fae693f807da208dc86dcf20fa2f620e20d9edcc17k4c7321\0\0\0\0\0\0'),(4,'de32c32b4fae693f807da208dc86dcf20fa2ffffe20d9edcc17k4c7321\0\0\0\0\0\0'),(5,'de32c32b4fae693f807da208dc86dcf20fa2ffffe20d9edcc17k4c1111\0\0\0\0\0\0'),(6,'de32c32b4fae693f807da208dc86dcf20fa2ffffe20d9edcc17k4c1431\0\0\0\0\0\0'),(7,'de32c32b4fae693f807da208dc86dcf20fa2ffffe20d9edcc17k4c1411\0\0\0\0\0\0'),(8,'de32c32b4fae693f807da208dc86dcf20fa2ffffe20d9edaa17k4c1411\0\0\0\0\0\0');
+/*!40000 ALTER TABLE `publicKeys` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2022-04-28 18:54:52
