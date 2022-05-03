@@ -1,7 +1,7 @@
 <?php
-$usuario=htmlentities("jordi");//$_POST['name'];
+$usuario=htmlentities($_POST['name']);//$_POST['name'];
 $userdef= filter_var($usuario, FILTER_SANITIZE_STRING);
-$password=htmlentities("meh");//$_POST['password'];
+$password=htmlentities($_POST['password']);//$_POST['password'];
 $passdef= filter_var($password, FILTER_SANITIZE_STRING);
 //session_start();
 //$_SESSION['usuario']=$usuario;
